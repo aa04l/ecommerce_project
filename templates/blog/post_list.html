@@ -1,0 +1,136 @@
+{% extends "index.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(120deg, #f0f4f8 0%, #e9ecef 100%);
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .post-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 28px;
+        padding: 22px 28px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e3e7ed;
+    }
+    .post-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.13);
+        border-color: #b6d0fa;
+    }
+    .post-card img {
+        max-width: 160px;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 14px;
+        margin-right: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        background: #f3f6fa;
+    }
+    .post-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .post-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #2563eb;
+        text-decoration: none;
+        letter-spacing: 0.01em;
+        margin-bottom: 2px;
+        transition: color 0.2s;
+    }
+    .post-title:hover {
+        color: #1e40af;
+        text-decoration: underline;
+    }
+    .post-meta {
+        font-size: 0.97rem;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+    .post-body {
+        color: #334155;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin-bottom: 8px;
+    }
+    .read-more {
+        align-self: flex-start;
+        margin-top: 6px;
+        padding: 7px 20px;
+        background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+        color: white;
+        border-radius: 9px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(96,165,250,0.08);
+        transition: background 0.2s, transform 0.15s;
+        border: none;
+    }
+    .read-more:hover {
+        background: linear-gradient(90deg, #1e40af 0%, #2563eb 100%);
+        transform: scale(1.04);
+    }
+    .alert-info {
+        background: #e0e7ff;
+        color: #3730a3;
+        border-radius: 12px;
+        padding: 24px;
+        font-size: 1.15rem;
+        margin-top: 40px;
+        box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+    }
+    @media (max-width: 700px) {
+        .post-card {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px 10px;
+        }
+        .post-card img {
+            margin-right: 0;
+            margin-bottom: 12px;
+            width: 100%;
+            max-width: 100%;
+            height: 180px;
+        }
+    }
+</style>
+
+<div class="container py-5">
+    <h1 class="mb-4 text-center" style="font-weight:900; color:#1e40af; letter-spacing:0.06em; font-size:2.5rem; text-shadow: 1px 2px 8px #b6d0fa;">Blog Posts</h1>
+    {% for post in posts %}
+    <div class="post-card">
+        {% if post.image %}
+        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+        {% endif %}
+        <div class="post-details">
+            <a href="{{ post.get_absolute_url }}" class="post-title">{{ post.title }}</a>
+            <p class="post-meta">
+                By <strong>{{ post.author }}</strong> | {{ post.created|date:"M d, Y" }}
+            </p>
+            <p class="post-body">
+                {{ post.body|truncatewords:30 }}
+            </p>
+            <a href="{{ post.get_absolute_url }}" class="read-more">Read More</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info text-center">
+        No posts available at the moment.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

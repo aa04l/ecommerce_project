@@ -1,0 +1,149 @@
+{% extends "index.html" %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+  .about-store-page {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    animation: fadeInPage 1s ease forwards;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 30px auto;
+  }
+  @keyframes fadeInPage {
+    from { opacity: 0; transform: translateY(40px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+
+  .about-store-img {
+    animation: imgPop 1s 0.2s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 4px solid #4f7df3;
+    margin: 0 auto 20px;
+    display: block;
+  }
+  @keyframes imgPop {
+    0% { transform: scale(0.8); opacity: 0;}
+    100% { transform: scale(1); opacity: 1;}
+  }
+
+  .about-store-card {
+    background: linear-gradient(135deg, #ffffffdd 0%, #f0f4ffdd 100%);
+    border-radius: 18px;
+    box-shadow: 0 4px 18px rgba(79, 125, 243, 0.2);
+    animation: cardSlideIn 1s 0.4s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+    padding: 30px 35px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  @keyframes cardSlideIn {
+    0% { transform: translateX(60px); opacity: 0;}
+    100% { transform: translateX(0); opacity: 1;}
+  }
+  .about-store-card:hover {
+    box-shadow: 0 12px 40px rgba(79, 125, 243, 0.35);
+    transform: translateY(-6px);
+  }
+
+  .card-title {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+  ul.list-unstyled {
+    padding-left: 0;
+    margin-bottom: 30px;
+    font-size: 1rem;
+    color: #34495e;
+    line-height: 1.6;
+  }
+  ul.list-unstyled li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  ul.list-unstyled li i {
+    color: #4f7df3;
+    font-size: 1.2rem;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  strong {
+    min-width: 110px;
+    display: inline-block;
+    color: #2c3e50;
+  }
+
+  h5.text-secondary {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #5d6d7e;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #4f7df3;
+    padding-bottom: 6px;
+    max-width: max-content;
+  }
+
+  p {
+    color: #2c3e50dd;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .about-store-page {
+      padding: 30px 15px;
+      max-width: 100%;
+    }
+    .about-store-card {
+      padding: 20px 25px;
+    }
+    .card-title {
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+    }
+    ul.list-unstyled li strong {
+      min-width: 90px;
+    }
+  }
+</style>
+
+<div class="container about-store-page">
+    <div class="row justify-content-center align-items-center gx-4 gy-4">
+        <div class="col-12 col-md-5 text-center">
+            {% if store.image %}
+                <img src="{{ store.image.url }}" alt="Store Image" class="about-store-img" />
+            {% else %}
+                <div class="about-store-img d-flex justify-content-center align-items-center bg-light text-muted">
+                    No Image Available
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-12 col-md-7">
+            <div class="about-store-card">
+                <h2 class="card-title">{{ store.name }}</h2>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-map-marker-alt"></i><strong>Location:</strong> {{ store.location }}</li>
+                    <li><i class="fas fa-phone-alt"></i><strong>Contact:</strong> {{ store.contact_number }}</li>
+                    <li><i class="fas fa-envelope"></i><strong>Email:</strong> {{ store.email }}</li>
+                    <li><i class="fas fa-clock"></i><strong>Opening Hours:</strong> {{ store.opening_hours }}</li>
+                </ul>
+                <h5 class="text-secondary">About the Store</h5>
+                <p>{{ store.about }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

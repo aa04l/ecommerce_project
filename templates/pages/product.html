@@ -1,0 +1,247 @@
+{% extends "index.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .product-image {
+        width: 320px;
+        height: 320px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        animation: imagePop 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes imagePop {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .product-details-container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        padding: 32px;
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+        animation: fadeInUp 0.8s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .product-info {
+        flex: 1;
+        animation: fadeInUp 1.2s cubic-bezier(.4, 0, .2, 1) 0.2s both;
+    }
+
+    .product-title {
+        font-size: 2.2rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+
+    .product-price {
+        color: #27ae60;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+
+    .product-category {
+        background: #f1f1f1;
+        color: #555;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        display: inline-block;
+        margin-bottom: 18px;
+    }
+
+    .add-to-cart-btn {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        margin-top: 24px;
+        transition: background 0.2s, transform 0.2s;
+        animation: fadeInUp 1.4s cubic-bezier(.4, 0, .2, 1) 0.4s both;
+    }
+
+    .add-to-cart-btn:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .product-description {
+        margin-top: 18px;
+        color: #333;
+        line-height: 1.7;
+        animation: fadeInUp 1.3s cubic-bezier(.4, 0, .2, 1) 0.3s both;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    /* Modal box */
+    .modal {
+        background: white;
+        border-radius: 10px;
+        padding: 30px 25px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        text-align: center;
+        animation: fadeInUp 0.3s ease forwards;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .modal h2 {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .modal p {
+        margin-bottom: 30px;
+        color: #555;
+        font-size: 1.1rem;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .btn-confirm {
+        background: #27ae60;
+        border: none;
+        padding: 12px 30px;
+        color: white;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-confirm:hover {
+        background: #1e8449;
+    }
+
+    .btn-cancel {
+        background: #ccc;
+        border: none;
+        padding: 12px 30px;
+        color: #333;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #aaa;
+        color: white;
+    }
+</style>
+
+<div class="product-details-container">
+    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+    <div class="product-info">
+        <div class="product-title">{{ product.name }}</div>
+        <div class="product-category">{{ product.category }}</div>
+        <div class="product-price">${{ product.price }}</div>
+        <div class="product-description">{{ product.content }}</div>
+        {% if user.is_authenticated %}
+<form method="POST" action="{% url 'buy_product' product.id %}" id="buyForm">
+    {% csrf_token %}
+    <label for="buyer_name">Your Name:</label>
+    <input type="text" id="buyer_name" name="buyer_name" required style="margin: 10px 0 20px 0; padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+    <button type="button" class="add-to-cart-btn" id="openModalBtn">Buy</button>
+</form>
+{% else %}
+<button class="add-to-cart-btn" onclick="window.location.href='{% url 'login' %}'">Log in to Buy</button>
+{% endif %}
+
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h2>Confirm Purchase</h2>
+        <p>Are you sure you want to confirm the purchase?</p>
+        <div class="modal-buttons">
+            <button class="btn-confirm" id="confirmBtn">Confirm</button>
+            <button class="btn-cancel" id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+  const openModalBtn = document.getElementById('openModalBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const buyForm = document.getElementById('buyForm');
+
+  // Open modal on "Buy" button click
+  openModalBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'flex';
+  });
+
+  // Cancel and close modal
+  cancelBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+  });
+
+  // On confirm
+  confirmBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+    // Show order confirmation message
+    alert('Purchase requested');
+    // Submit the form
+    buyForm.submit();
+  });
+
+  // Close modal when clicking outside the box
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      modalOverlay.style.display = 'none';
+    }
+  });
+</script>
+
+{% endblock %}

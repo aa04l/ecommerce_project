@@ -1,0 +1,252 @@
+{% extends "index.html" %} {% block title %}Product List{% endblock %}
+ {% block content %}
+<div class="product-container">
+  <h1>Our Products</h1>
+
+  <!-- Filter and Search -->
+  <div class="filter-search-container">
+  <form method="GET" id="filter-form">
+    <input
+      type="text"
+      name="q"
+      id="search-bar"
+      placeholder="🔍 Search for products..."
+      value="{{ request.GET.q }}"
+      autocomplete="off"
+    />
+    <select name="price" id="price-filter" class="custom-select">
+      <option value="all" {% if request.GET.price == "all" %}selected{% endif %}>All Prices</option>
+      <option value="low" {% if request.GET.price == "low" %}selected{% endif %}>Below $50</option>
+      <option value="medium" {% if request.GET.price == "medium" %}selected{% endif %}>$50 - $100</option>
+      <option value="high" {% if request.GET.price == "high" %}selected{% endif %}>Above $100</option>
+    </select>
+    <select name="category" id="category-filter" class="custom-select">
+      <option value="all" {% if request.GET.category == "all" %}selected{% endif %}>All Categories</option>
+      {% for category in categories %}
+      <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+        {{ category }}
+      </option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="custom-select">Apply Filters</button>
+  </form>
+</div>
+
+
+  <div class="product-grid">
+    {% for product in pro %}
+    <div
+      class="product-card"
+      data-id="{{ product.id }}"
+      data-name="{{ product.name }}"
+      data-price="{{ product.price }}"
+      data-content="{{ product.content }}"
+      data-image="{{ product.image.url }}"
+      data-category="{{ product.category }}"
+    >
+      {% if product.image %}
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="product-image"
+      />
+      {% else %}
+      <p>No image available</p>
+      {% endif %}
+      <div class="product-info">
+        <h2 class="product-name">{{ product.name }}</h2>
+        <p class="product-price">${{ product.price }}</p>
+        <p class="product-description">
+          {{ product.content|truncatechars:70 }}
+        </p>
+      </div>
+    </div>
+    {% empty %}
+    <p>No products available at the moment.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Product Details Modal -->
+<div id="product-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <div class="modal-body">
+      <div class="modal-image-section">
+        <img id="modal-image" src="" alt="Product Image" class="modal-image" />
+      </div>
+      <div class="modal-text-section">
+        <h2 id="modal-name"></h2>
+        <p id="modal-price" class="modal-price"></p>
+        <p id="modal-description" class="modal-description"></p>
+        <p id="modal-category" class="modal-category"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<style>
+  .filter-search-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    justify-content: center;
+  }
+
+  #search-bar {
+    flex: 1 1 300px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    transition: border-color 0.3s ease;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  }
+
+  #search-bar:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  }
+
+  .custom-select {
+    flex: 0 0 180px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  }
+
+  .custom-select:hover,
+  .custom-select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  }
+  /* Product Grid */
+  /* الخلفية تغطي الشاشة مع تغبيش المنتجات خلفها */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 15px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+  transform: scale(1);
+}
+
+
+
+
+
+
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const productCards = document.querySelectorAll(".product-card");
+  const modal = document.getElementById("product-modal");
+  const productContainer = document.querySelector(".product-container");
+  const modalImage = document.getElementById("modal-image");
+  const modalName = document.getElementById("modal-name");
+  const modalPrice = document.getElementById("modal-price");
+  const modalDescription = document.getElementById("modal-description");
+  const modalCategory = document.getElementById("modal-category");
+  const closeModalBtn = document.querySelector(".close-btn");
+
+  let hoverTimeout;
+  const HOVER_DELAY = 500; // مدة التأخير قبل الظهور (ميلي ثانية)
+  let modalVisible = false;
+
+  productCards.forEach(card => {
+    card.addEventListener("mouseenter", () => {
+      hoverTimeout = setTimeout(() => {
+        // تعبئة بيانات المودال
+        modalImage.src = card.getAttribute("data-image");
+        modalName.textContent = card.getAttribute("data-name");
+        modalPrice.textContent = `$${card.getAttribute("data-price")}`;
+        modalDescription.textContent = card.getAttribute("data-content");
+        modalCategory.textContent = `Category: ${card.getAttribute("data-category")}`;
+
+        modal.classList.add("show");
+        productContainer.classList.add("blur");
+        modalVisible = true;
+      }, HOVER_DELAY);
+    });
+
+    card.addEventListener("mouseleave", () => {
+      clearTimeout(hoverTimeout);
+      // لا نخفي النافذة هنا، لتبقى مفتوحة
+    });
+
+    card.addEventListener("click", () => {
+      // عند الضغط يفتح صفحة التفاصيل
+      const productId = card.getAttribute("data-id");
+      window.location.href = `/products/product-details/${productId}/`;
+    });
+  });
+
+  // إخفاء النافذة عند خروج الماوس من المودال نفسه أو الضغط على زر الإغلاق أو الخلفية
+  closeModalBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    hideModal();
+  });
+
+  modal.addEventListener("mouseleave", () => {
+    // إخفاء النافذة عند مغادرة الماوس للمودال
+    hideModal();
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      hideModal();
+    }
+  });
+
+  function hideModal() {
+    modal.classList.remove("show");
+    productContainer.classList.remove("blur");
+    modalVisible = false;
+  }
+});
+
+
+</script>
+
+
+
+{% endblock %}
