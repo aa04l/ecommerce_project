@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-b)u4^8kxg)@^w@p5tmo=@ehma^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,192.168.100.14').split(',')
 AUTH_USER_MODEL = 'store.Userstore'
 LOGOUT_REDIRECT_URL = '/products/home'
 
@@ -135,14 +135,14 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Media files (Uploaded Images)
 MEDIA_URL = '/photos/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'photos')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'ecommerce_project', 'static'),
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 

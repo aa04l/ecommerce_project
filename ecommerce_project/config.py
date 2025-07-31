@@ -27,9 +27,9 @@ DATABASE_CONFIG = {
 
 # Static Files Configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'ecommerce_project', 'static'),
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 # Media Files Configuration
