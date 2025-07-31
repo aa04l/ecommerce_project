@@ -183,19 +183,92 @@
         <div class="product-title">{{ product.name }}</div>
         <div class="product-category">{{ product.category }}</div>
         <div class="product-price">${{ product.price }}</div>
+        
+        <!-- Rating Display -->
+        <div style="margin: 16px 0; display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; gap: 2px;">
+                {% for i in "12345" %}
+                    <span style="color: {% if forloop.counter <= avg_rating %}#ffc107{% else %}#e0e0e0{% endif %}; font-size: 18px;">★</span>
+                {% endfor %}
+            </div>
+            <span style="color: #666; font-size: 14px;">({{ avg_rating }}/5) - {{ reviews.count }} reviews</span>
+        </div>
+        
         <div class="product-description">{{ product.content }}</div>
+        
         {% if user.is_authenticated %}
-<form method="POST" action="{% url 'buy_product' product.id %}" id="buyForm">
-    {% csrf_token %}
-    <label for="buyer_name">Your Name:</label>
-    <input type="text" id="buyer_name" name="buyer_name" required style="margin: 10px 0 20px 0; padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
-    <button type="button" class="add-to-cart-btn" id="openModalBtn">Buy</button>
-</form>
-{% else %}
-<button class="add-to-cart-btn" onclick="window.location.href='{% url 'login' %}'">Log in to Buy</button>
-{% endif %}
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <form method="POST" action="{% url 'add_to_cart' product.id %}" style="flex: 1;">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="1" min="1" style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 8px;">
+                    <button type="submit" class="add-to-cart-btn" style="margin-top: 0;">Add to Cart</button>
+                </form>
+                
+                <form method="POST" action="{% url 'buy_product' product.id %}" id="buyForm" style="flex: 1;">
+                    {% csrf_token %}
+                    <label for="buyer_name">Your Name:</label>
+                    <input type="text" id="buyer_name" name="buyer_name" required style="margin: 10px 0 20px 0; padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                    <button type="button" class="add-to-cart-btn" id="openModalBtn" style="background: #28a745;">Buy Now</button>
+                </form>
+            </div>
+        {% else %}
+            <button class="add-to-cart-btn" onclick="window.location.href='{% url 'login' %}'">Log in to Buy</button>
+        {% endif %}
 
     </div>
+</div>
+
+<!-- Reviews Section -->
+<div style="max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 32px;">
+    <h3 style="margin: 0 0 24px 0; color: #333;">Customer Reviews</h3>
+    
+    {% if user.is_authenticated and not user_review %}
+        <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+            <h4 style="margin: 0 0 16px 0; color: #333;">Write a Review</h4>
+            <form method="POST" action="{% url 'add_review' product.id %}">
+                {% csrf_token %}
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Rating:</label>
+                    <div style="display: flex; gap: 8px;">
+                        {% for i in "12345" %}
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" id="rating_{{ forloop.counter }}" style="display: none;">
+                            <label for="rating_{{ forloop.counter }}" style="cursor: pointer; font-size: 24px; color: #e0e0e0;">★</label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label for="comment" style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Comment:</label>
+                    <textarea name="comment" id="comment" rows="4" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                <button type="submit" style="padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">Submit Review</button>
+            </form>
+        </div>
+    {% endif %}
+    
+    {% if reviews %}
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div style="border-bottom: 1px solid #f0f0f0; padding: 20px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                        <h4 style="margin: 0; color: #333;">{{ review.user.username }}</h4>
+                        <div style="display: flex; gap: 2px; margin: 8px 0;">
+                            {% for i in "12345" %}
+                                <span style="color: {% if forloop.counter <= review.rating %}#ffc107{% else %}#e0e0e0{% endif %}; font-size: 14px;">★</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span style="color: #888; font-size: 12px;">{{ review.created_at|date:"M j, Y" }}</span>
+                </div>
+                {% if review.comment %}
+                    <p style="margin: 0; color: #666; line-height: 1.5;">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: #888; padding: 40px 0;">No reviews yet. Be the first to review this product!</p>
+    {% endif %}
 </div>
 
 <!-- Confirmation Modal -->
@@ -241,6 +314,37 @@
     if (e.target === modalOverlay) {
       modalOverlay.style.display = 'none';
     }
+  });
+
+  // Star rating functionality
+  const ratingLabels = document.querySelectorAll('label[for^="rating_"]');
+  const ratingInputs = document.querySelectorAll('input[name="rating"]');
+
+  ratingLabels.forEach((label, index) => {
+    label.addEventListener('mouseenter', () => {
+      for (let i = 0; i <= index; i++) {
+        ratingLabels[i].style.color = '#ffc107';
+      }
+    });
+
+    label.addEventListener('mouseleave', () => {
+      ratingLabels.forEach((l, i) => {
+        if (!ratingInputs[i].checked) {
+          l.style.color = '#e0e0e0';
+        }
+      });
+    });
+
+    label.addEventListener('click', () => {
+      ratingInputs[index].checked = true;
+      ratingLabels.forEach((l, i) => {
+        if (i <= index) {
+          l.style.color = '#ffc107';
+        } else {
+          l.style.color = '#e0e0e0';
+        }
+      });
+    });
   });
 </script>
 

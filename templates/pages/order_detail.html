@@ -1,0 +1,67 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="order-detail-container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">Order Details</h1>
+    
+    <div class="order-info" style="background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3 style="margin: 0 0 16px 0; color: #333;">Order Information</h3>
+                <p style="margin: 8px 0; color: #666;"><strong>Order Number:</strong> {{ order.order_number }}</p>
+                <p style="margin: 8px 0; color: #666;"><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+                <p style="margin: 8px 0; color: #666;"><strong>Status:</strong> 
+                    <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+                                {% if order.status == 'pending' %}background: #fff3cd; color: #856404;
+                                {% elif order.status == 'processing' %}background: #cce5ff; color: #004085;
+                                {% elif order.status == 'shipped' %}background: #d1ecf1; color: #0c5460;
+                                {% elif order.status == 'delivered' %}background: #d4edda; color: #155724;
+                                {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </p>
+                <p style="margin: 8px 0; color: #666;"><strong>Total Amount:</strong> ${{ order.total_amount }}</p>
+            </div>
+            
+            <div>
+                <h3 style="margin: 0 0 16px 0; color: #333;">Shipping Information</h3>
+                <p style="margin: 8px 0; color: #666;"><strong>Address:</strong></p>
+                <p style="margin: 8px 0; color: #666; padding-left: 16px;">{{ order.shipping_address }}</p>
+                <p style="margin: 8px 0; color: #666;"><strong>Phone:</strong> {{ order.phone_number }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="order-items" style="background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 24px;">
+        <h3 style="margin: 0 0 20px 0; color: #333;">Order Items</h3>
+        
+        {% for item in order.items.all %}
+        <div style="display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0;">
+            <div style="width: 80px; height: 80px; margin-right: 16px;">
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
+            </div>
+            
+            <div style="flex: 1;">
+                <h4 style="margin: 0 0 8px 0; color: #333;">{{ item.product.name }}</h4>
+                <p style="margin: 0; color: #666;">Quantity: {{ item.quantity }}</p>
+            </div>
+            
+            <div style="text-align: right;">
+                <p style="margin: 0; font-weight: bold; color: #2563eb;">${{ item.price }}</p>
+                <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">Total: ${{ item.total_price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e9ecef; text-align: right;">
+            <h3 style="margin: 0; color: #333;">Total: ${{ order.total_amount }}</h3>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'orders' %}" style="padding: 12px 24px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; margin-right: 12px;">Back to Orders</a>
+        <a href="{% url 'products' %}" style="padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px;">Continue Shopping</a>
+    </div>
+</div>
+
+{% endblock %} 

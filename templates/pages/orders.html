@@ -1,0 +1,50 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="orders-container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">My Orders</h1>
+    
+    {% if orders %}
+        <div class="orders-list" style="background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden;">
+            {% for order in orders %}
+            <div class="order-item" style="padding: 24px; border-bottom: 1px solid #f0f0f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="margin: 0; color: #333;">Order #{{ order.order_number }}</h3>
+                        <p style="margin: 5px 0 0 0; color: #666;">{{ order.created_at|date:"F j, Y" }}</p>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-weight: bold; color: #2563eb; font-size: 18px;">${{ order.total_amount }}</p>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 8px; display: inline-block;
+                                    {% if order.status == 'pending' %}background: #fff3cd; color: #856404;
+                                    {% elif order.status == 'processing' %}background: #cce5ff; color: #004085;
+                                    {% elif order.status == 'shipped' %}background: #d1ecf1; color: #0c5460;
+                                    {% elif order.status == 'delivered' %}background: #d4edda; color: #155724;
+                                    {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <p style="margin: 0; color: #666;"><strong>Items:</strong> {{ order.items.count }} item(s)</p>
+                    <p style="margin: 5px 0 0 0; color: #666;"><strong>Shipping Address:</strong> {{ order.shipping_address|truncatewords:10 }}</p>
+                </div>
+                
+                <div style="text-align: right;">
+                    <a href="{% url 'order_detail' order.id %}" style="padding: 8px 16px; background: #2563eb; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">View Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="color: #666; margin-bottom: 20px;">No orders yet</h2>
+            <p style="color: #888; margin-bottom: 30px;">Start shopping to see your orders here!</p>
+            <a href="{% url 'products' %}" style="padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Start Shopping</a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %} 

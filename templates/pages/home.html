@@ -80,6 +80,7 @@
     </div>
 </div>
 
+<!-- Product and Banner specific styles -->
 <style>
 /* Container and grid */
 .product-container {
@@ -93,13 +94,14 @@
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     animation: fadeInBg 1s ease;
-    
 }
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 24px;
 }
+
 /* Product Card styling */
 .product-card {
     background: #fff;
@@ -113,11 +115,13 @@
     align-items: center;
     outline: none;
 }
+
 .product-card:hover,
 .product-card:focus {
     box-shadow: 0 8px 32px rgba(0,0,0,0.16);
     transform: translateY(-4px) scale(1.03);
 }
+
 .product-image {
     width: 100%;
     max-width: 180px;
@@ -126,118 +130,26 @@
     border-radius: 12px;
     margin-bottom: 12px;
 }
+
 .product-info {
     text-align: center;
 }
+
 .product-name {
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 6px;
 }
+
 .product-price {
     color: #007bff;
     font-weight: 600;
     margin-bottom: 6px;
 }
+
 .product-description {
     color: #555;
     font-size: 0.97rem;
-}
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-}
-.modal.show {
-    display: flex;
-}
-.modal-content {
-    background: #fff;
-    border-radius: 20px;
-    width: 80%;
-    max-width: 900px;
-    padding: 24px;
-    display: flex;
-    gap: 24px;
-    position: relative;
-}
-.modal-image-section {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.modal-image {
-    max-width: 100%;
-    border-radius: 18px;
-}
-.modal-text-section {
-    flex: 1;
-}
-.modal-price {
-    color: #007bff;
-    font-weight: 700;
-    margin-top: 12px;
-    font-size: 1.2rem;
-}
-.modal-description {
-    margin-top: 12px;
-    color: #333;
-    font-size: 1rem;
-    line-height: 1.4;
-}
-.modal-category {
-    margin-top: 12px;
-    font-style: italic;
-    color: #666;
-    font-size: 0.9rem;
-}
-.close-btn {
-    position: absolute;
-    top: 12px;
-    right: 24px;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    user-select: none;
-}
-
-/* Responsive */
-@media (max-width: 700px) {
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-    }
-    .product-card {
-        padding: 10px;
-    }
-    .modal-content {
-        flex-direction: column;
-        width: 90%;
-        padding: 16px;
-    }
-    .modal-image-section, .modal-text-section {
-        width: 100%;
-        text-align: center;
-    }
-}
-@media (max-width: 480px) {
-    .product-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* Banner styles */
@@ -251,12 +163,14 @@
     overflow: hidden;
     box-shadow: 0 10px 32px rgba(0,0,0,0.13);
 }
+
 .swiper-slide {
     display: flex;
     justify-content: center;
     align-items: center;
     background: transparent;
 }
+
 .animated-banner {
     width: 100%;
     max-width: 1200px;
@@ -268,6 +182,7 @@
     transition: transform 0.4s cubic-bezier(.68,-0.55,.27,1.55), box-shadow 0.3s;
     display: block;
 }
+
 .animated-banner:hover {
     transform: scale(1.035) rotate(-1.5deg) translateY(-6px);
     box-shadow: 0 16px 40px rgba(0,0,0,0.22);
@@ -291,6 +206,7 @@
     }
 }
 
+/* Responsive */
 @media (max-width: 900px) {
     .swiper-container, .animated-banner {
         max-width: 98vw;
@@ -298,6 +214,7 @@
         border-radius: 14px;
     }
 }
+
 @media (max-width: 600px) {
     .swiper-container, .animated-banner {
         max-width: 100vw;
@@ -305,101 +222,23 @@
         border-radius: 8px;
     }
 }
+
+@media (max-width: 700px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    .product-card {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const productCards = document.querySelectorAll(".product-card");
-  const modal = document.getElementById("product-modal");
-  const productContainer = document.querySelector(".product-container");
-  const modalImage = document.getElementById("modal-image");
-  const modalName = document.getElementById("modal-name");
-  const modalPrice = document.getElementById("modal-price");
-  const modalDescription = document.getElementById("modal-description");
-  const modalCategory = document.getElementById("modal-category");
-  const closeModalBtn = document.querySelector(".close-btn");
-
-  let hoverTimeout;
-  const HOVER_DELAY = 500; // مدة التأخير قبل الظهور (ميلي ثانية)
-  let modalVisible = false;
-
-  productCards.forEach(card => {
-    card.addEventListener("mouseenter", () => {
-      hoverTimeout = setTimeout(() => {
-        // تعبئة بيانات المودال
-        modalImage.src = card.getAttribute("data-image");
-        modalName.textContent = card.getAttribute("data-name");
-        modalPrice.textContent = `$${card.getAttribute("data-price")}`;
-        modalDescription.textContent = card.getAttribute("data-content");
-        modalCategory.textContent = `Category: ${card.getAttribute("data-category")}`;
-
-        modal.classList.add("show");
-        productContainer.classList.add("blur");
-        modalVisible = true;
-      }, HOVER_DELAY);
-    });
-
-    card.addEventListener("mouseleave", () => {
-      clearTimeout(hoverTimeout);
-      // لا نخفي النافذة هنا، لتبقى مفتوحة
-    });
-
-    card.addEventListener("click", () => {
-      // عند الضغط يفتح صفحة التفاصيل
-      const productId = card.getAttribute("data-id");
-      window.location.href = `/products/product-details/${productId}/`;
-    });
-  });
-
-  // إخفاء النافذة عند خروج الماوس من المودال نفسه أو الضغط على زر الإغلاق أو الخلفية
-  closeModalBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    hideModal();
-  });
-
-  modal.addEventListener("mouseleave", () => {
-    // إخفاء النافذة عند مغادرة الماوس للمودال
-    hideModal();
-  });
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      hideModal();
-    }
-  });
-
-  function hideModal() {
-    modal.classList.remove("show");
-    productContainer.classList.remove("blur");
-    modalVisible = false;
-  }
-});
-
-
-
-
-// Initialize Swiper for banner
-document.addEventListener('DOMContentLoaded', function () {
-    const swiper = new Swiper('.swiper-container', {
-        loop: true,
-        autoplay: {
-            delay: 5000,
-            disableOnInteraction: false,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        effect: 'fade',
-        fadeEffect: {
-            crossFade: true,
-        },
-    });
-});
-</script>
 {% endblock %}

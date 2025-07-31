@@ -1,0 +1,166 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="notifications-container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="color: #333; margin: 0;">Notifications</h1>
+        {% if notifications %}
+            <div style="display: flex; gap: 12px;">
+                <button onclick="markAllAsRead()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Mark All as Read</button>
+                <button onclick="clearAllNotifications()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Clear All</button>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if notifications %}
+        <div class="notifications-list">
+            {% for notification in notifications %}
+            <div class="notification-item" data-id="{{ notification.id }}" style="background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 16px; {% if not notification.is_read %}border-left: 4px solid #2563eb;{% endif %} transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 18px;">
+                                {% if notification.notification_type == 'order_status' %}📦
+                                {% elif notification.notification_type == 'product_restock' %}🔄
+                                {% elif notification.notification_type == 'promotion' %}🎉
+                                {% else %}🔔{% endif %}
+                            </span>
+                            <h3 style="margin: 0; color: #333; font-size: 16px;">{{ notification.title }}</h3>
+                            {% if not notification.is_read %}
+                                <span style="background: #dc3545; color: white; border-radius: 50%; width: 8px; height: 8px; display: inline-block;"></span>
+                            {% endif %}
+                        </div>
+                        <p style="margin: 0 0 12px 0; color: #666; line-height: 1.5;">{{ notification.message }}</p>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+                                        {% if notification.notification_type == 'order_status' %}background: #cce5ff; color: #004085;
+                                        {% elif notification.notification_type == 'product_restock' %}background: #d4edda; color: #155724;
+                                        {% elif notification.notification_type == 'promotion' %}background: #fff3cd; color: #856404;
+                                        {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                                {{ notification.get_notification_type_display }}
+                            </span>
+                            <span style="color: #888; font-size: 12px;">{{ notification.created_at|date:"M j, Y g:i A" }}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        {% if not notification.is_read %}
+                        <button onclick="markAsRead({{ notification.id }})" style="background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Mark as Read</button>
+                        {% endif %}
+                        <button onclick="deleteNotification({{ notification.id }})" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🔔</div>
+            <h3 style="color: #666; margin-bottom: 16px;">No notifications yet</h3>
+            <p style="color: #888;">You'll see notifications here when there are updates about your orders, promotions, or product restocks.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/products/mark-notification-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+            const button = notificationItem.querySelector('button[onclick^="markAsRead"]');
+            const unreadDot = notificationItem.querySelector('span[style*="background: #dc3545"]');
+            
+            if (button) button.remove();
+            if (unreadDot) unreadDot.remove();
+            notificationItem.style.borderLeft = 'none';
+            
+            // Update notification count in header
+            updateNotificationCount();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function deleteNotification(notificationId) {
+    if (confirm('Are you sure you want to delete this notification?')) {
+        fetch(`/products/delete-notification/${notificationId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+                notificationItem.style.opacity = '0';
+                setTimeout(() => {
+                    notificationItem.remove();
+                    if (document.querySelectorAll('.notification-item').length === 0) {
+                        location.reload(); // Reload to show empty state
+                    }
+                }, 300);
+                
+                // Update notification count in header
+                updateNotificationCount();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function markAllAsRead() {
+    fetch('/products/mark-all-notifications-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function clearAllNotifications() {
+    if (confirm('Are you sure you want to delete all notifications?')) {
+        fetch('/products/clear-all-notifications/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function updateNotificationCount() {
+    // This function would update the notification count in the header
+    // You can implement this based on your header structure
+}
+</script>
+
+{% endblock %} 
